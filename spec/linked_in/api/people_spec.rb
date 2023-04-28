@@ -1,11 +1,11 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe LinkedIn::People do
-  let(:uid) {"MpkAFJTlPY"}
-  let(:url) {"www.linkedin.com/in/miguel-santos-del-nariz"}
-  let(:access_token) {"AQVM91zzF-bLiOfCsTi8ktxnq99l-tW9meri8F9ZEWAuHf5g1bO_Pa4p0nFwKvZ7VFdSERAnJZq3eNOq6BzDPFNIyGIy50s-7HkLq2hE5uy6HrAQrsMAQR_qZxnBrSD11g_M2sF5XB5fUHZOXEQFgFaXB0M19VUAsvsz3yg-7zMI7w9Zn_DYTLO1e2W9VEZrOgVmRNt1XBIT_pdQO7pQkKv4702yJTrIBOuhZWNLZRClPHd2RRhPf2SJeTkodbnL4xSvzcyEPpLaTPyZIVJnBcsAzYFiG_pJtyGs7x-iWbUZsYgnUVSy8Wg-5eqmvze5tuZdICIP0PJ0AVMNGOxRRiLOEh8MSg"}
+  let(:uid) { test_secret(:uid) }
+  let(:url) { test_secret(:url) }
+  let(:access_token) { test_secret(:access_token) }
 
-  let(:api) {LinkedIn::API.new(access_token)}
+  let(:api) { LinkedIn::API.new(access_token) }
 
   def verify(result)
     expect(result).to be_kind_of LinkedIn::Mash
@@ -51,36 +51,36 @@ describe LinkedIn::People do
     end
   end
   it "gets another users profile by user id" do
-    VCR.use_cassette("people profile other uid") do
-      verify api.profile(uid)
-    end
+    VCR.use_cassette("people profile other uid") { verify api.profile(uid) }
   end
   it "gets another users profile by url" do
-    VCR.use_cassette("people profile other url") do
-      verify api.profile(url)
-    end
+    VCR.use_cassette("people profile other url") { verify api.profile(url) }
   end
 
   # Errors
   it "errors on bad input" do
-    expect{api.profile("Bad input")}.to raise_error
+    api.profile("Bad input")
+    expect { api.profile("Bad input") }.to raise_error
   end
   it "errors on email deprecation" do
     msg = LinkedIn::ErrorMessages.deprecated
-    expect{api.profile(email: "email@email.com")}.to raise_error(LinkedIn::Deprecated, msg)
+    expect { api.profile(email: "email@email.com") }.to raise_error(
+      LinkedIn::Deprecated,
+      msg
+    )
   end
 
   # Fields
   it "grabs certain profile fields" do
     VCR.use_cassette("people profile fields simple") do
-      result = api.profile(fields: ["id","industry"])
+      result = api.profile(fields: %w[id industry])
       verify result
       expect(result["industry"]).to be_kind_of String
     end
   end
   it "grabs more complex profile fields" do
     VCR.use_cassette("people profile fields complex") do
-      result = api.profile(fields: ["id",{"positions" => ["title"]}])
+      result = api.profile(fields: ["id", { "positions" => ["title"] }])
       verify result
       expect(result["positions"]["values"][0]["title"]).to be_kind_of String
     end
@@ -110,7 +110,7 @@ describe LinkedIn::People do
   end
   it "grabs certain fields for multiple people" do
     VCR.use_cassette("people profile multiple fields") do
-      result = api.profile(ids: ["self", uid], fields: ["id", "industry"])
+      result = api.profile(ids: ["self", uid], fields: %w[id industry])
       verify result
       expect(result["values"][0]["industry"]).to be_kind_of String
     end
@@ -133,7 +133,7 @@ describe LinkedIn::People do
   end
   it "grabs certain fields for those connections" do
     VCR.use_cassette("people profile connections fields") do
-      result = api.connections(fields: ["id", "industry"])
+      result = api.connections(fields: %w[id industry])
       verify result
       expect(result["values"].length).to eq 4
       expect(result["values"][0]["industry"]).to be_kind_of String
@@ -149,12 +149,12 @@ describe LinkedIn::People do
   end
   it "grabs new connections since a numeric date" do
     VCR.use_cassette("people profile new connections self") do
-      verify api.new_connections(1388534400000)
+      verify api.new_connections(1_388_534_400_000)
     end
   end
   it "grabs new connections since a Time.utc object" do
     VCR.use_cassette("people profile new connections self") do
-      verify api.new_connections(Time.utc(2014,1,1))
+      verify api.new_connections(Time.utc(2014, 1, 1))
     end
   end
   it "grabs new connections for another user" do
@@ -166,7 +166,7 @@ describe LinkedIn::People do
   end
   it "grabs certain fields of new connections" do
     VCR.use_cassette("people profile new connections fields") do
-      result = api.new_connections("2014-01-01", fields: ["id", "industry"])
+      result = api.new_connections("2014-01-01", fields: %w[id industry])
       verify result
       expect(result["values"].length).to eq 3
       expect(result["values"][0]["industry"]).to be_kind_of String
@@ -177,7 +177,7 @@ describe LinkedIn::People do
     VCR.use_cassette("people picture urls") do
       result = api.picture_urls
       verify result
-      expect(result["values"][0] =~ URI::regexp).to_not be_nil
+      expect(result["values"][0] =~ URI.regexp).to_not be_nil
     end
   end
 
@@ -187,5 +187,5 @@ describe LinkedIn::People do
       verify result
       expect(result["all"].length).to eq 2
     end
-  end  
+  end
 end

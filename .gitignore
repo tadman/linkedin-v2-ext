@@ -1,0 +1,9 @@
+*.gem
+Gemfile.lock
+
+.test_secrets.yml
+
+.DS_Store
+/.vscode
+*.swp
+

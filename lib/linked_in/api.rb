@@ -1,18 +1,20 @@
 module LinkedIn
   class API
-
     attr_accessor :access_token
 
-    def initialize(access_token=nil)
+    def initialize(access_token = nil)
       access_token = parse_access_token(access_token)
       verify_access_token!(access_token)
       @access_token = access_token
 
       @connection =
-        LinkedIn::Connection.new params: default_params, headers: default_headers do |conn|
-        conn.request :multipart
-        conn.adapter Faraday.default_adapter
-      end
+        LinkedIn::Connection.new(
+          params: default_params,
+          headers: default_headers
+        ) do |conn|
+          conn.adapter(:httpclient)
+          conn.request(:multipart)
+        end
 
       initialize_endpoints
     end
@@ -25,11 +27,14 @@ module LinkedIn
     #                        :job_suggestions,
     #                        :add_job_bookmark
 
-    def_delegators :@people, :profile,
-                             :skills,
-                             :connections,
-                             :picture_urls,
-                             :new_connections
+    def_delegators(
+      :@people,
+      :profile,
+      :skills,
+      :connections,
+      :picture_urls,
+      :new_connections
+    )
 
     def_delegators :@search, :search
 
@@ -42,30 +47,35 @@ module LinkedIn
     #                          :group_memberships,
     #                          :post_group_discussion
 
-    def_delegators :@organizations, :organization,
-                                    :brand,
-                                    :organization_acls,
-                                    :organization_search,
-                                    :organization_page_statistics,
-                                    :organization_follower_statistics,
-                                    :organization_share_statistics,
-                                    :organization_follower_count
+    def_delegators(
+      :@organizations,
+      :organization,
+      :brand,
+      :organization_acls,
+      :organization_search,
+      :organization_page_statistics,
+      :organization_follower_statistics,
+      :organization_share_statistics,
+      :organization_follower_count
+    )
 
     def_delegators :@communications, :send_message
 
-    def_delegators :@share_and_social_stream, :shares,
-                                              :share,
-                                              :likes,
-                                              :like,
-                                              :unlike,
-                                              :comments,
-                                              :comment,
-                                              :get_share,
-                                              :get_social_actions,
-                                              :migrate_update_keys
+    def_delegators(
+      :@share_and_social_stream,
+      :shares,
+      :share,
+      :likes,
+      :like,
+      :unlike,
+      :comments,
+      :comment,
+      :get_share,
+      :get_social_actions,
+      :migrate_update_keys
+    )
 
-    def_delegators :@media, :summary,
-                            :upload
+    def_delegators :@media, :summary, :upload
 
     private ##############################################################
 
@@ -89,7 +99,12 @@ module LinkedIn
 
     def default_headers
       # https://developer.linkedin.com/documents/api-requests-json
-      return {"x-li-format" => "json", "Authorization" => "Bearer #{@access_token.token}"}
+      return(
+        {
+          "x-li-format" => "json",
+          "Authorization" => "Bearer #{@access_token.token}"
+        }
+      )
     end
 
     def verify_access_token!(access_token)

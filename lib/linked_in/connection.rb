@@ -1,9 +1,11 @@
+require "faraday"
+require "faraday/httpclient"
+require "faraday/multipart"
+
 module LinkedIn
   # Used to perform requests against LinkedIn's API.
   class Connection < ::Faraday::Connection
-
-    def initialize(url=nil, options=nil, &block)
-
+    def initialize(url = nil, options = nil, &block)
       if url.is_a? Hash
         options = url
         url = options[:url]
@@ -24,9 +26,7 @@ module LinkedIn
       self.response :linkedin_raise_error
     end
 
-
     private ##############################################################
-
 
     def default_url
       LinkedIn.config.api + LinkedIn.config.api_version
